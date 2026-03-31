@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New languages status</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f8f8; padding: 1.5rem; color: #1a1a1a; }
+.container { max-width: 700px; margin: 0 auto; }
+h2 { font-size: 18px; font-weight: 600; margin-bottom: 1.5rem; }
+.add-lang-row { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+.add-lang-row input, .add-lang-row select { flex: 1; padding: 7px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; background: #fff; }
+.add-lang-row button { padding: 7px 14px; border: 1px solid #ccc; border-radius: 6px; background: #fff; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.add-lang-row button:hover { background: #f0f0f0; }
+.lang-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 10px; }
+.lang-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.lang-name { font-weight: 600; font-size: 15px; }
+.remove-btn { background: none; border: none; cursor: pointer; font-size: 13px; color: #999; padding: 2px 6px; border-radius: 4px; }
+.remove-btn:hover { background: #fee; color: #c00; }
+.field-row { display: grid; grid-template-columns: 110px 1fr; gap: 8px; align-items: start; margin-bottom: 7px; }
+.field-label { font-size: 12px; color: #888; padding-top: 7px; }
+.field-row input, .field-row select, .field-row textarea { font-size: 13px; padding: 5px 8px; border: 1px solid #ddd; border-radius: 6px; background: #fafafa; color: #1a1a1a; width: 100%; font-family: inherit; }
+.field-row textarea { resize: vertical; min-height: 38px; line-height: 1.4; }
+.output-section { margin-top: 1.5rem; border-top: 1px solid #e5e5e5; padding-top: 1.5rem; }
+.output-label { font-size: 12px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+.output-box { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 1rem; font-size: 13px; font-family: 'Menlo', 'Monaco', 'Consolas', monospace; white-space: pre-wrap; color: #1a1a1a; line-height: 1.6; min-height: 60px; }
+.copy-btn { margin-top: 10px; width: 100%; padding: 9px; border: 1px solid #ccc; border-radius: 6px; background: #fff; font-size: 13px; cursor: pointer; font-family: inherit; }
+.copy-btn:hover { background: #f0f0f0; }
+.copy-btn.copied { background: #e6f4ea; border-color: #aad4b0; color: #2a7a3a; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>New languages status</h2>
+
+  <div class="add-lang-row">
+    <input type="text" id="new-lang-input" placeholder="Add language (e.g. Croatian)" />
+    <select id="new-lang-eta">
+      <option value="">ETA...</option>
+      <option value="April 24">April 24</option>
+      <option value="May 15">May 15</option>
+      <option value="Mid June">Mid June</option>
+      <option value="Dependent on backfill">Dependent on backfill</option>
+      <option value="TBD">TBD</option>
+    </select>
+    <button onclick="addLanguage()">+ Add</button>
+  </div>
+
+  <div id="lang-cards"></div>
+
+  <div class="output-section">
+    <div class="output-label">Slack message preview</div>
+    <div class="output-box" id="output-box"></div>
+    <button class="copy-btn" id="copy-btn" onclick="copyOutput()">Copy to clipboard</button>
+  </div>
+</div>
+
+<script>
+const DEFAULT_LANGUAGES = [
+  { name: 'Croatian', eta: 'April 24', onboarding: 'In progress', onboardingNotes: 'Contract review in progress - Ivana', qa: 'Not started', qaNotes: '' },
+  { name: 'Hungarian', eta: 'April 24', onboarding: 'Completed', onboardingNotes: "We've onboarded Zuzana", qa: 'In progress', qaNotes: '3 scenarios completed\nAccount set up in progress' },
+  { name: 'Korean', eta: 'May 15', onboarding: 'In progress', onboardingNotes: '', qa: '', qaNotes: '' },
+  { name: 'Turkish', eta: 'May 15', onboarding: 'In progress', onboardingNotes: '', qa: '', qaNotes: '' },
+  { name: 'Portuguese (Portugal)', eta: 'Dependent on backfill', onboarding: '', onboardingNotes: '', qa: 'In progress', qaNotes: 'Launch scenarios completed?\nBAU in progress?' },
+  { name: 'Spanish (Mexico)', eta: 'Mid June', onboarding: 'In progress', onboardingNotes: '', qa: '', qaNotes: '' },
+  { name: 'French (Canada)', eta: 'Mid June', onboarding: 'In progress', onboardingNotes: '', qa: '', qaNotes: '' },
+];
+
+const STATUS_OPTIONS = ['', 'Not started', 'In progress', 'Completed', 'Blocked', 'TBD'];
+let languages = JSON.parse(JSON.stringify(DEFAULT_LANGUAGES));
+
+function renderCards() {
+  const container = document.getElementById('lang-cards');
+  container.innerHTML = '';
+  languages.forEach((lang, i) => {
+    const statusOpts = STATUS_OPTIONS.map(s => `<option value="${s}" ${lang.onboarding === s ? 'selected' : ''}>${s || '—'}</option>`).join('');
+    const qaOpts = STATUS_OPTIONS.map(s => `<option value="${s}" ${lang.qa === s ? 'selected' : ''}>${s || '—'}</option>`).join('');
+    const card = document.createElement('div');
+    card.className = 'lang-card';
+    card.innerHTML = `
+      <div class="lang-header">
+        <span class="lang-name">${lang.name}</span>
+        <button class="remove-btn" onclick="removeLang(${i})">Remove</button>
+      </div>
+      <div class="field-row"><span class="field-label">ETA</span><input type="text" value="${lang.eta}" placeholder="e.g. April 24" oninput="update(${i},'eta',this.value)" /></div>
+      <div class="field-row"><span class="field-label">Onboarding</span><select onchange="update(${i},'onboarding',this.value)">${statusOpts}</select></div>
+      <div class="field-row"><span class="field-label"></span><textarea placeholder="Onboarding notes..." oninput="update(${i},'onboardingNotes',this.value)">${lang.onboardingNotes}</textarea></div>
+      <div class="field-row"><span class="field-label">QA scenarios</span><select onchange="update(${i},'qa',this.value)">${qaOpts}</select></div>
+      <div class="field-row"><span class="field-label"></span><textarea placeholder="QA notes..." oninput="update(${i},'qaNotes',this.value)">${lang.qaNotes}</textarea></div>
+    `;
+    container.appendChild(card);
+  });
+  renderOutput();
+}
+
+function update(i, field, value) { languages[i][field] = value; renderOutput(); }
+function removeLang(i) { languages.splice(i, 1); renderCards(); }
+
+function addLanguage() {
+  const input = document.getElementById('new-lang-input');
+  const eta = document.getElementById('new-lang-eta');
+  const name = input.value.trim();
+  if (!name) return;
+  languages.push({ name, eta: eta.value, onboarding: '', onboardingNotes: '', qa: '', qaNotes: '' });
+  input.value = '';
+  eta.value = '';
+  renderCards();
+}
+
+document.getElementById('new-lang-input').addEventListener('keydown', e => { if (e.key === 'Enter') addLanguage(); });
+
+function renderOutput() {
+  let lines = ['*New languages status*'];
+  languages.forEach(lang => {
+    lines.push(`• *${lang.name}*`);
+    if (lang.eta) lines.push(`\t• ETA ${lang.eta}`);
+    if (lang.onboarding) lines.push(`\t• Onboarding: ${lang.onboarding}`);
+    if (lang.onboardingNotes) lang.onboardingNotes.split('\n').filter(Boolean).forEach(n => lines.push(`\t\t• ${n}`));
+    if (lang.qa) lines.push(`\t• QA scenarios: ${lang.qa}`);
+    if (lang.qaNotes) lang.qaNotes.split('\n').filter(Boolean).forEach(n => lines.push(`\t\t• ${n}`));
+  });
+  document.getElementById('output-box').textContent = lines.join('\n');
+}
+
+function copyOutput() {
+  const text = document.getElementById('output-box').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy to clipboard'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+renderCards();
+</script>
+</body>
+</html>
