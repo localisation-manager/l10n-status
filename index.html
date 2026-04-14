@@ -3,137 +3,733 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>New languages status</title>
+<title>L10N Status — Slack Template</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f8f8; padding: 1.5rem; color: #1a1a1a; }
-.container { max-width: 700px; margin: 0 auto; }
-h2 { font-size: 18px; font-weight: 600; margin-bottom: 1.5rem; }
-.add-lang-row { display: flex; gap: 8px; margin-bottom: 1.5rem; }
-.add-lang-row input, .add-lang-row select { flex: 1; padding: 7px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; background: #fff; }
-.add-lang-row button { padding: 7px 14px; border: 1px solid #ccc; border-radius: 6px; background: #fff; font-size: 13px; cursor: pointer; white-space: nowrap; }
-.add-lang-row button:hover { background: #f0f0f0; }
-.lang-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 10px; }
-.lang-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.lang-name { font-weight: 600; font-size: 15px; }
-.remove-btn { background: none; border: none; cursor: pointer; font-size: 13px; color: #999; padding: 2px 6px; border-radius: 4px; }
-.remove-btn:hover { background: #fee; color: #c00; }
-.field-row { display: grid; grid-template-columns: 110px 1fr; gap: 8px; align-items: start; margin-bottom: 7px; }
-.field-label { font-size: 12px; color: #888; padding-top: 7px; }
-.field-row input, .field-row select, .field-row textarea { font-size: 13px; padding: 5px 8px; border: 1px solid #ddd; border-radius: 6px; background: #fafafa; color: #1a1a1a; width: 100%; font-family: inherit; }
-.field-row textarea { resize: vertical; min-height: 38px; line-height: 1.4; }
-.output-section { margin-top: 1.5rem; border-top: 1px solid #e5e5e5; padding-top: 1.5rem; }
-.output-label { font-size: 12px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
-.output-box { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 1rem; font-size: 13px; font-family: 'Menlo', 'Monaco', 'Consolas', monospace; white-space: pre-wrap; color: #1a1a1a; line-height: 1.6; min-height: 60px; }
-.copy-btn { margin-top: 10px; width: 100%; padding: 9px; border: 1px solid #ccc; border-radius: 6px; background: #fff; font-size: 13px; cursor: pointer; font-family: inherit; }
-.copy-btn:hover { background: #f0f0f0; }
-.copy-btn.copied { background: #e6f4ea; border-color: #aad4b0; color: #2a7a3a; }
+  :root {
+    --bg: #1a1a2e;
+    --surface: #22223a;
+    --surface-hover: #2a2a45;
+    --border: #333358;
+    --text: #e0e0e0;
+    --text-muted: #8888aa;
+    --accent: #7c5cfc;
+    --accent-hover: #9b7dff;
+    --green: #34d399;
+    --section-product: #f59e42;
+    --section-marketing: #38bdf8;
+    --section-language: #a78bfa;
+    --danger: #f87171;
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  header p {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  .actions-bar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 20px;
+    transition: all 0.15s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--accent-hover); }
+
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--surface-hover); }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+  .btn-danger:hover { background: rgba(248,113,113,0.1); }
+
+  .btn-add {
+    background: transparent;
+    color: var(--accent);
+    border: 1px dashed var(--accent);
+    width: 100%;
+    padding: 12px;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .btn-add:hover { background: rgba(124,92,252,0.08); }
+
+  .toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--green);
+    color: #000;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s;
+    z-index: 100;
+    pointer-events: none;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Sections */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-header:hover { background: var(--surface-hover); }
+
+  .section-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    flex: 1;
+  }
+  .section-toggle {
+    color: var(--text-muted);
+    font-size: 18px;
+    transition: transform 0.2s;
+  }
+  .section.collapsed .section-toggle { transform: rotate(-90deg); }
+  .section.collapsed .section-body { display: none; }
+
+  .section-body {
+    padding: 4px 18px 18px;
+  }
+
+  /* Priority items (Product & Marketing) */
+  .priority-group {
+    margin-bottom: 14px;
+    background: rgba(0,0,0,0.15);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .priority-group:last-child { margin-bottom: 0; }
+
+  .priority-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .priority-title input {
+    flex: 1;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  .priority-title input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: rgba(0,0,0,0.2);
+  }
+
+  .bullet-list {
+    list-style: none;
+    padding-left: 8px;
+  }
+  .bullet-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .bullet-item::before {
+    content: "•";
+    color: var(--text-muted);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .bullet-item input {
+    flex: 1;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text);
+    font-size: 13px;
+    padding: 3px 6px;
+    border-radius: 4px;
+  }
+  .bullet-item input:focus {
+    outline: none;
+    border-color: var(--border);
+    background: rgba(0,0,0,0.2);
+  }
+  .bullet-item .btn-danger { margin-top: 1px; }
+
+  .add-bullet {
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 8px;
+    margin-left: 14px;
+    margin-top: 2px;
+  }
+  .add-bullet:hover { text-decoration: underline; }
+
+  /* Language cards */
+  .lang-card {
+    background: rgba(0,0,0,0.15);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .lang-card:last-of-type { margin-bottom: 0; }
+
+  .lang-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .lang-card-header input.lang-name {
+    flex: 1;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  .lang-card-header input.lang-name:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: rgba(0,0,0,0.2);
+  }
+
+  .lang-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .lang-field {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,0,0,0.15);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  .lang-field label {
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .lang-field input, .lang-field select {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 12px;
+    font-family: inherit;
+    padding: 2px 4px;
+  }
+  .lang-field input:focus, .lang-field select:focus {
+    outline: none;
+  }
+  .lang-field select option { background: var(--surface); }
+
+  .lang-notes .bullet-list { padding-left: 4px; }
+
+  /* Preview */
+  .preview-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-top: 20px;
+    overflow: hidden;
+    display: none;
+  }
+  .preview-container.visible { display: block; }
+  .preview-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .preview-header h2 {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .preview-body {
+    padding: 18px;
+    font-family: 'Lato', -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #d1d2d3;
+    background: #1a1d21;
+    max-height: 500px;
+    overflow-y: auto;
+  }
 </style>
 </head>
 <body>
-<div class="container">
-  <h2>New languages status</h2>
 
-  <div class="add-lang-row">
-    <input type="text" id="new-lang-input" placeholder="Add language (e.g. Croatian)" />
-    <select id="new-lang-eta">
-      <option value="">ETA...</option>
-      <option value="April 24">April 24</option>
-      <option value="May 15">May 15</option>
-      <option value="Mid June">Mid June</option>
-      <option value="Dependent on backfill">Dependent on backfill</option>
-      <option value="TBD">TBD</option>
-    </select>
-    <button onclick="addLanguage()">+ Add</button>
+<header>
+  <h1>L10N Status — Slack Template</h1>
+  <p>Edit the sections below, then copy the formatted message for Slack</p>
+</header>
+
+<div class="actions-bar">
+  <button class="btn-primary" onclick="copyToClipboard()">📋 Copy for Slack</button>
+  <button class="btn-secondary" onclick="togglePreview()">👁 Preview</button>
+</div>
+
+<div class="toast" id="toast">Copied to clipboard ✓</div>
+
+<!-- PRODUCT L10N PRIORITIES -->
+<div class="section" id="section-product">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="section-dot" style="background:var(--section-product)"></span>
+    <h2>Product L10N Priorities</h2>
+    <span class="section-toggle">▾</span>
   </div>
+  <div class="section-body" id="product-body"></div>
+</div>
 
-  <div id="lang-cards"></div>
-
-  <div class="output-section">
-    <div class="output-label">Slack message preview</div>
-    <div class="output-box" id="output-box"></div>
-    <button class="copy-btn" id="copy-btn" onclick="copyOutput()">Copy to clipboard</button>
+<!-- MARKETING L10N PRIORITIES -->
+<div class="section" id="section-marketing">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="section-dot" style="background:var(--section-marketing)"></span>
+    <h2>Marketing L10N Priorities</h2>
+    <span class="section-toggle">▾</span>
   </div>
+  <div class="section-body" id="marketing-body"></div>
+</div>
+
+<!-- NEW LANGUAGE STATUS -->
+<div class="section" id="section-languages">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="section-dot" style="background:var(--section-language)"></span>
+    <h2>New Language Status</h2>
+    <span class="section-toggle">▾</span>
+  </div>
+  <div class="section-body" id="languages-body"></div>
+</div>
+
+<!-- PREVIEW -->
+<div class="preview-container" id="preview-container">
+  <div class="preview-header">
+    <h2>Slack Preview</h2>
+    <button class="btn-secondary" onclick="togglePreview()" style="padding:6px 14px">Close</button>
+  </div>
+  <div class="preview-body" id="preview-body"></div>
 </div>
 
 <script>
-const DEFAULT_LANGUAGES = [
-  { name: 'Croatian', eta: 'April 24', onboarding: 'In progress', onboardingNotes: 'Contract review in progress - Ivana', qa: 'Not started', qaNotes: '' },
-  { name: 'Hungarian', eta: 'April 24', onboarding: 'Completed', onboardingNotes: "We've onboarded Zuzana", qa: 'In progress', qaNotes: '3 scenarios completed\nAccount set up in progress' },
-  { name: 'Korean', eta: 'May 15', onboarding: 'In progress', onboardingNotes: '', qa: '', qaNotes: '' },
-  { name: 'Turkish', eta: 'May 15', onboarding: 'In progress', onboardingNotes: '', qa: '', qaNotes: '' },
-  { name: 'Portuguese (Portugal)', eta: 'Dependent on backfill', onboarding: '', onboardingNotes: '', qa: 'In progress', qaNotes: 'Launch scenarios completed?\nBAU in progress?' },
-  { name: 'Spanish (Mexico)', eta: 'Mid June', onboarding: 'In progress', onboardingNotes: '', qa: '', qaNotes: '' },
-  { name: 'French (Canada)', eta: 'Mid June', onboarding: 'In progress', onboardingNotes: '', qa: '', qaNotes: '' },
-];
+// ——— DATA MODEL ———
+const data = {
+  product: [
+    {
+      title: "Customer notifications blocked scenarios",
+      bullets: [
+        "Test customer notifications in pt-PT, es-MX, fr-CA",
+        "Mark scenarios as \"blocked, customer notifications\" for pt-PT, es-MX, fr-CA"
+      ]
+    },
+    {
+      title: "WhatsApp notifications",
+      bullets: [
+        "Emma to run by Claude current Lara via Crowdin translations saved in the google sheet [hr, hu]",
+        "Review process"
+      ]
+    }
+  ],
+  marketing: [
+    {
+      title: "Onboarding emails HR, HU",
+      bullets: [
+        "Prioritise for completion before April 24",
+        "Confirm with Beth availability to enable on April 24"
+      ]
+    }
+  ],
+  languages: [
+    {
+      name: "Croatian",
+      eta: "April 24",
+      onboarding: "Completed",
+      qaStatus: "In progress",
+      notes: [
+        "Lea and Ivana",
+        "Priority: onboarding emails that will need to be enabled on April 24",
+        "Fresha Partner: 73 scenarios completed by Lea",
+        "Marketplace: 44 scenarios completed by Ivana",
+        "On track for launch on April 24",
+        "Emma to run by Claude current Lara via Crowdin translations saved in the sheet"
+      ]
+    },
+    {
+      name: "Hungarian",
+      eta: "April 24",
+      onboarding: "In progress",
+      qaStatus: "In progress",
+      notes: [
+        "Intro call with Orsolya and Àgnes, both on Wednesday morning. Emma to identify if both deserve a chance",
+        "Priority: onboarding emails that will need to be enabled on April 24",
+        "Fresha Partner: 38 scenarios completed by Zuzanna",
+        "Emma to run by Claude current Lara via Crowdin translations saved in the sheet"
+      ]
+    },
+    {
+      name: "Korean",
+      eta: "May 15",
+      onboarding: "Completed",
+      qaStatus: "In progress",
+      notes: [
+        "Jay Yun",
+        "Ryoo",
+        "Marketplace scenarios assigned to Jay Yun to complete by EOD Friday 24th April",
+        "No assignments to Ryoo yet"
+      ]
+    },
+    {
+      name: "Turkish",
+      eta: "May 15",
+      onboarding: "In progress",
+      qaStatus: "",
+      notes: [
+        "Waiting for HR to sent contract to Gül"
+      ]
+    },
+    {
+      name: "Portuguese (Portugal)",
+      eta: "Dependent on backfill",
+      onboarding: "",
+      qaStatus: "In progress",
+      notes: [
+        "197 scenarios completed",
+        "14 hours left for the launch package - Fresha Partner only",
+        "Emails ready for launch",
+        "Waiting for engineering to provide ETA"
+      ]
+    },
+    {
+      name: "Spanish (Mexico)",
+      eta: "Mid June",
+      onboarding: "In progress",
+      qaStatus: "",
+      notes: [
+        "Waiting for HR to send contract to Paola"
+      ]
+    },
+    {
+      name: "French (Canada)",
+      eta: "Mid June",
+      onboarding: "Completed",
+      qaStatus: "Not started",
+      notes: [
+        "Natacha has confirmed availability of 10h/week. More hours from May",
+        "Assign Fresha Partner scenarios instead of Marketplace (blocked by customer notifications)"
+      ]
+    }
+  ]
+};
 
-const STATUS_OPTIONS = ['', 'Not started', 'In progress', 'Completed', 'Blocked', 'TBD'];
-let languages = JSON.parse(JSON.stringify(DEFAULT_LANGUAGES));
+// ——— RENDERING ———
 
-function renderCards() {
-  const container = document.getElementById('lang-cards');
+function renderPrioritySection(containerId, items, sectionKey) {
+  const container = document.getElementById(containerId);
   container.innerHTML = '';
-  languages.forEach((lang, i) => {
-    const statusOpts = STATUS_OPTIONS.map(s => `<option value="${s}" ${lang.onboarding === s ? 'selected' : ''}>${s || '—'}</option>`).join('');
-    const qaOpts = STATUS_OPTIONS.map(s => `<option value="${s}" ${lang.qa === s ? 'selected' : ''}>${s || '—'}</option>`).join('');
+
+  items.forEach((group, gi) => {
+    const div = document.createElement('div');
+    div.className = 'priority-group';
+    div.innerHTML = `
+      <div class="priority-title">
+        <input type="text" value="${esc(group.title)}" oninput="data.${sectionKey}[${gi}].title=this.value">
+        <button class="btn-danger" onclick="removePriorityGroup('${sectionKey}',${gi})">✕</button>
+      </div>
+      <ul class="bullet-list" id="${sectionKey}-${gi}-bullets"></ul>
+      <span class="add-bullet" onclick="addBullet('${sectionKey}',${gi})">+ Add bullet</span>
+    `;
+    container.appendChild(div);
+
+    const ul = div.querySelector('.bullet-list');
+    group.bullets.forEach((b, bi) => {
+      addBulletEl(ul, sectionKey, gi, bi, b);
+    });
+  });
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'btn-add';
+  addBtn.textContent = '+ Add priority group';
+  addBtn.onclick = () => {
+    data[sectionKey].push({ title: '', bullets: [''] });
+    renderPrioritySection(containerId, data[sectionKey], sectionKey);
+  };
+  container.appendChild(addBtn);
+}
+
+function addBulletEl(ul, sectionKey, gi, bi, value) {
+  const li = document.createElement('li');
+  li.className = 'bullet-item';
+  li.innerHTML = `
+    <input type="text" value="${esc(value)}" oninput="data.${sectionKey}[${gi}].bullets[${bi}]=this.value">
+    <button class="btn-danger" onclick="removeBullet('${sectionKey}',${gi},${bi})">✕</button>
+  `;
+  ul.appendChild(li);
+}
+
+function renderLanguages() {
+  const container = document.getElementById('languages-body');
+  container.innerHTML = '';
+
+  data.languages.forEach((lang, li) => {
     const card = document.createElement('div');
     card.className = 'lang-card';
     card.innerHTML = `
-      <div class="lang-header">
-        <span class="lang-name">${lang.name}</span>
-        <button class="remove-btn" onclick="removeLang(${i})">Remove</button>
+      <div class="lang-card-header">
+        <input class="lang-name" type="text" value="${esc(lang.name)}" oninput="data.languages[${li}].name=this.value">
+        <button class="btn-danger" onclick="removeLanguage(${li})">✕ Remove</button>
       </div>
-      <div class="field-row"><span class="field-label">ETA</span><input type="text" value="${lang.eta}" placeholder="e.g. April 24" oninput="update(${i},'eta',this.value)" /></div>
-      <div class="field-row"><span class="field-label">Onboarding</span><select onchange="update(${i},'onboarding',this.value)">${statusOpts}</select></div>
-      <div class="field-row"><span class="field-label"></span><textarea placeholder="Onboarding notes..." oninput="update(${i},'onboardingNotes',this.value)">${lang.onboardingNotes}</textarea></div>
-      <div class="field-row"><span class="field-label">QA scenarios</span><select onchange="update(${i},'qa',this.value)">${qaOpts}</select></div>
-      <div class="field-row"><span class="field-label"></span><textarea placeholder="QA notes..." oninput="update(${i},'qaNotes',this.value)">${lang.qaNotes}</textarea></div>
+      <div class="lang-fields">
+        <div class="lang-field">
+          <label>ETA</label>
+          <input type="text" value="${esc(lang.eta)}" oninput="data.languages[${li}].eta=this.value" style="width:120px">
+        </div>
+        <div class="lang-field">
+          <label>Onboarding</label>
+          <select onchange="data.languages[${li}].onboarding=this.value">
+            <option value="" ${lang.onboarding===''?'selected':''}>—</option>
+            <option value="Completed" ${lang.onboarding==='Completed'?'selected':''}>Completed</option>
+            <option value="In progress" ${lang.onboarding==='In progress'?'selected':''}>In progress</option>
+            <option value="Not started" ${lang.onboarding==='Not started'?'selected':''}>Not started</option>
+          </select>
+        </div>
+        <div class="lang-field">
+          <label>QA scenarios</label>
+          <select onchange="data.languages[${li}].qaStatus=this.value">
+            <option value="" ${lang.qaStatus===''?'selected':''}>—</option>
+            <option value="Completed" ${lang.qaStatus==='Completed'?'selected':''}>Completed</option>
+            <option value="In progress" ${lang.qaStatus==='In progress'?'selected':''}>In progress</option>
+            <option value="Not started" ${lang.qaStatus==='Not started'?'selected':''}>Not started</option>
+          </select>
+        </div>
+      </div>
+      <div class="lang-notes">
+        <ul class="bullet-list" id="lang-${li}-notes"></ul>
+        <span class="add-bullet" onclick="addLangNote(${li})">+ Add note</span>
+      </div>
     `;
     container.appendChild(card);
+
+    const ul = card.querySelector('.bullet-list');
+    lang.notes.forEach((n, ni) => {
+      const item = document.createElement('li');
+      item.className = 'bullet-item';
+      item.innerHTML = `
+        <input type="text" value="${esc(n)}" oninput="data.languages[${li}].notes[${ni}]=this.value">
+        <button class="btn-danger" onclick="removeLangNote(${li},${ni})">✕</button>
+      `;
+      ul.appendChild(item);
+    });
   });
-  renderOutput();
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'btn-add';
+  addBtn.textContent = '+ Add language';
+  addBtn.onclick = () => {
+    data.languages.push({ name: '', eta: '', onboarding: '', qaStatus: '', notes: [''] });
+    renderLanguages();
+  };
+  container.appendChild(addBtn);
 }
 
-function update(i, field, value) { languages[i][field] = value; renderOutput(); }
-function removeLang(i) { languages.splice(i, 1); renderCards(); }
+// ——— ACTIONS ———
 
-function addLanguage() {
-  const input = document.getElementById('new-lang-input');
-  const eta = document.getElementById('new-lang-eta');
-  const name = input.value.trim();
-  if (!name) return;
-  languages.push({ name, eta: eta.value, onboarding: '', onboardingNotes: '', qa: '', qaNotes: '' });
-  input.value = '';
-  eta.value = '';
-  renderCards();
+function addBullet(sectionKey, gi) {
+  data[sectionKey][gi].bullets.push('');
+  if (sectionKey === 'product') renderPrioritySection('product-body', data.product, 'product');
+  else renderPrioritySection('marketing-body', data.marketing, 'marketing');
 }
 
-document.getElementById('new-lang-input').addEventListener('keydown', e => { if (e.key === 'Enter') addLanguage(); });
+function removeBullet(sectionKey, gi, bi) {
+  data[sectionKey][gi].bullets.splice(bi, 1);
+  if (sectionKey === 'product') renderPrioritySection('product-body', data.product, 'product');
+  else renderPrioritySection('marketing-body', data.marketing, 'marketing');
+}
 
-function renderOutput() {
-  let lines = ['*New languages status*'];
-  languages.forEach(lang => {
-    lines.push(`• *${lang.name}*`);
-    if (lang.eta) lines.push(`\t• ETA ${lang.eta}`);
-    if (lang.onboarding) lines.push(`\t• Onboarding: ${lang.onboarding}`);
-    if (lang.onboardingNotes) lang.onboardingNotes.split('\n').filter(Boolean).forEach(n => lines.push(`\t\t• ${n}`));
-    if (lang.qa) lines.push(`\t• QA scenarios: ${lang.qa}`);
-    if (lang.qaNotes) lang.qaNotes.split('\n').filter(Boolean).forEach(n => lines.push(`\t\t• ${n}`));
+function removePriorityGroup(sectionKey, gi) {
+  data[sectionKey].splice(gi, 1);
+  if (sectionKey === 'product') renderPrioritySection('product-body', data.product, 'product');
+  else renderPrioritySection('marketing-body', data.marketing, 'marketing');
+}
+
+function addLangNote(li) {
+  data.languages[li].notes.push('');
+  renderLanguages();
+}
+
+function removeLangNote(li, ni) {
+  data.languages[li].notes.splice(ni, 1);
+  renderLanguages();
+}
+
+function removeLanguage(li) {
+  data.languages.splice(li, 1);
+  renderLanguages();
+}
+
+function toggleSection(header) {
+  header.closest('.section').classList.toggle('collapsed');
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ——— GENERATE SLACK TEXT ———
+
+function generateSlack() {
+  let lines = [];
+
+  // Product L10N Priorities
+  lines.push('*PRODUCT L10N PRIORITIES*');
+  data.product.forEach(group => {
+    if (group.title.trim()) {
+      lines.push(`• *${group.title.trim()}*`);
+      group.bullets.forEach(b => {
+        if (b.trim()) lines.push(`    • ${b.trim()}`);
+      });
+    }
   });
-  document.getElementById('output-box').textContent = lines.join('\n');
+
+  lines.push('');
+
+  // Marketing L10N Priorities
+  lines.push('*MARKETING L10N PRIORITIES*');
+  data.marketing.forEach(group => {
+    if (group.title.trim()) {
+      lines.push(`• *${group.title.trim()}*`);
+      group.bullets.forEach(b => {
+        if (b.trim()) lines.push(`    • ${b.trim()}`);
+      });
+    }
+  });
+
+  lines.push('');
+
+  // New Language Status
+  lines.push('*NEW LANGUAGE STATUS*');
+  data.languages.forEach(lang => {
+    if (!lang.name.trim()) return;
+    lines.push(`• *${lang.name.trim()}*`);
+    if (lang.eta.trim()) lines.push(`    • ETA ${lang.eta.trim()}`);
+    if (lang.onboarding) lines.push(`    • Onboarding: ${lang.onboarding}`);
+    if (lang.qaStatus) lines.push(`    • QA scenarios: ${lang.qaStatus}`);
+    lang.notes.forEach(n => {
+      if (n.trim()) lines.push(`    • ${n.trim()}`);
+    });
+  });
+
+  return lines.join('\n');
 }
 
-function copyOutput() {
-  const text = document.getElementById('output-box').textContent;
+function copyToClipboard() {
+  const text = generateSlack();
   navigator.clipboard.writeText(text).then(() => {
-    const btn = document.getElementById('copy-btn');
-    btn.textContent = 'Copied!';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = 'Copy to clipboard'; btn.classList.remove('copied'); }, 2000);
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
   });
 }
 
-renderCards();
+function togglePreview() {
+  const container = document.getElementById('preview-container');
+  container.classList.toggle('visible');
+  if (container.classList.contains('visible')) {
+    const text = generateSlack();
+    // Render with simulated Slack bold
+    const html = text
+      .replace(/\*(.+?)\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br>');
+    document.getElementById('preview-body').innerHTML = html;
+  }
+}
+
+// ——— INIT ———
+renderPrioritySection('product-body', data.product, 'product');
+renderPrioritySection('marketing-body', data.marketing, 'marketing');
+renderLanguages();
 </script>
 </body>
 </html>
