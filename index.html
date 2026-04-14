@@ -303,7 +303,36 @@
   }
   .lang-field select option { background: var(--surface); }
 
-  .lang-notes .bullet-list { padding-left: 4px; }
+  .lang-subsection {
+    background: rgba(0,0,0,0.1);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .lang-subsection:last-of-type { margin-bottom: 0; }
+  .lang-subsection-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .lang-subsection-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+  }
+  .lang-subsection select {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 12px;
+    font-family: inherit;
+  }
+  .lang-subsection select:focus { outline: none; }
+  .lang-subsection select option { background: var(--surface); }
+  .lang-subsection .bullet-list { padding-left: 4px; }
 
   /* Preview */
   .preview-container {
@@ -409,7 +438,7 @@
 
 <script>
 // ——— STORAGE KEY ———
-const STORAGE_KEY = 'l10n_slack_template_v2';
+const STORAGE_KEY = 'l10n_slack_template_v3';
 
 // ——— DEFAULT DATA ———
 function getDefaults() { return JSON.parse(JSON.stringify(DEFAULT_DATA)); }
@@ -450,9 +479,11 @@ const DEFAULT_DATA = {
       name: "Croatian",
       eta: "April 24",
       onboarding: "Completed",
+      onboardingNotes: [
+        "Lea and Ivana"
+      ],
       qaStatus: "In progress",
-      notes: [
-        "Lea and Ivana",
+      qaNotes: [
         "Priority: onboarding emails that will need to be enabled on April 24",
         "Fresha Partner: 73 scenarios completed by Lea",
         "Marketplace: 44 scenarios completed by Ivana",
@@ -464,9 +495,11 @@ const DEFAULT_DATA = {
       name: "Hungarian",
       eta: "April 24",
       onboarding: "In progress",
+      onboardingNotes: [
+        "Intro call with Orsolya and Àgnes, both on Wednesday morning. Emma to identify if both deserve a chance"
+      ],
       qaStatus: "In progress",
-      notes: [
-        "Intro call with Orsolya and Àgnes, both on Wednesday morning. Emma to identify if both deserve a chance",
+      qaNotes: [
         "Priority: onboarding emails that will need to be enabled on April 24",
         "Fresha Partner: 38 scenarios completed by Zuzanna",
         "Emma to run by Claude current Lara via Crowdin translations saved in the sheet"
@@ -476,10 +509,12 @@ const DEFAULT_DATA = {
       name: "Korean",
       eta: "May 15",
       onboarding: "Completed",
-      qaStatus: "In progress",
-      notes: [
+      onboardingNotes: [
         "Jay Yun",
-        "Ryoo",
+        "Ryoo"
+      ],
+      qaStatus: "In progress",
+      qaNotes: [
         "Marketplace scenarios assigned to Jay Yun to complete by EOD Friday 24th April",
         "No assignments to Ryoo yet"
       ]
@@ -488,17 +523,19 @@ const DEFAULT_DATA = {
       name: "Turkish",
       eta: "May 15",
       onboarding: "In progress",
-      qaStatus: "",
-      notes: [
+      onboardingNotes: [
         "Waiting for HR to sent contract to Gül"
-      ]
+      ],
+      qaStatus: "",
+      qaNotes: []
     },
     {
       name: "Portuguese (Portugal)",
       eta: "Dependent on backfill",
       onboarding: "",
+      onboardingNotes: [],
       qaStatus: "In progress",
-      notes: [
+      qaNotes: [
         "197 scenarios completed",
         "14 hours left for the launch package - Fresha Partner only",
         "Emails ready for launch",
@@ -509,18 +546,21 @@ const DEFAULT_DATA = {
       name: "Spanish (Mexico)",
       eta: "Mid June",
       onboarding: "In progress",
-      qaStatus: "",
-      notes: [
+      onboardingNotes: [
         "Waiting for HR to send contract to Paola"
-      ]
+      ],
+      qaStatus: "",
+      qaNotes: []
     },
     {
       name: "French (Canada)",
       eta: "Mid June",
       onboarding: "Completed",
+      onboardingNotes: [
+        "Natacha has confirmed availability of 10h/week. More hours from May"
+      ],
       qaStatus: "Not started",
-      notes: [
-        "Natacha has confirmed availability of 10h/week. More hours from May",
+      qaNotes: [
         "Assign Fresha Partner scenarios instead of Marketplace (blocked by customer notifications)"
       ]
     }
@@ -535,6 +575,16 @@ try {
     data = JSON.parse(saved);
     // Backfill new sections for older saved data
     if (!data.i18n) data.i18n = getDefaults().i18n;
+    // Migrate old notes[] → onboardingNotes[] + qaNotes[]
+    data.languages.forEach(lang => {
+      if (lang.notes && !lang.onboardingNotes) {
+        lang.onboardingNotes = lang.notes;
+        lang.qaNotes = [];
+        delete lang.notes;
+      }
+      if (!lang.onboardingNotes) lang.onboardingNotes = [];
+      if (!lang.qaNotes) lang.qaNotes = [];
+    });
     showSaveStatus('Restored from your last session');
   } else {
     data = getDefaults();
@@ -639,8 +689,10 @@ function renderLanguages() {
           <label>ETA</label>
           <input type="text" value="${esc(lang.eta)}" oninput="data.languages[${li}].eta=this.value;scheduleSave()" style="width:120px">
         </div>
-        <div class="lang-field">
-          <label>Onboarding</label>
+      </div>
+      <div class="lang-subsection">
+        <div class="lang-subsection-header">
+          <span class="lang-subsection-label">Onboarding</span>
           <select onchange="data.languages[${li}].onboarding=this.value;scheduleSave()">
             <option value="" ${lang.onboarding===''?'selected':''}>—</option>
             <option value="Completed" ${lang.onboarding==='Completed'?'selected':''}>Completed</option>
@@ -648,8 +700,12 @@ function renderLanguages() {
             <option value="Not started" ${lang.onboarding==='Not started'?'selected':''}>Not started</option>
           </select>
         </div>
-        <div class="lang-field">
-          <label>QA scenarios</label>
+        <ul class="bullet-list" id="lang-${li}-onboarding"></ul>
+        <span class="add-bullet" onclick="addLangSubNote(${li},'onboardingNotes')">+ Add note</span>
+      </div>
+      <div class="lang-subsection">
+        <div class="lang-subsection-header">
+          <span class="lang-subsection-label">QA scenarios</span>
           <select onchange="data.languages[${li}].qaStatus=this.value;scheduleSave()">
             <option value="" ${lang.qaStatus===''?'selected':''}>—</option>
             <option value="Completed" ${lang.qaStatus==='Completed'?'selected':''}>Completed</option>
@@ -657,23 +713,34 @@ function renderLanguages() {
             <option value="Not started" ${lang.qaStatus==='Not started'?'selected':''}>Not started</option>
           </select>
         </div>
-      </div>
-      <div class="lang-notes">
-        <ul class="bullet-list" id="lang-${li}-notes"></ul>
-        <span class="add-bullet" onclick="addLangNote(${li})">+ Add note</span>
+        <ul class="bullet-list" id="lang-${li}-qa"></ul>
+        <span class="add-bullet" onclick="addLangSubNote(${li},'qaNotes')">+ Add note</span>
       </div>
     `;
     container.appendChild(card);
 
-    const ul = card.querySelector('.bullet-list');
-    lang.notes.forEach((n, ni) => {
+    // Render onboarding notes
+    const obUl = card.querySelector(`#lang-${li}-onboarding`);
+    lang.onboardingNotes.forEach((n, ni) => {
       const item = document.createElement('li');
       item.className = 'bullet-item';
       item.innerHTML = `
-        <input type="text" value="${esc(n)}" oninput="data.languages[${li}].notes[${ni}]=this.value;scheduleSave()">
-        <button class="btn-danger" onclick="removeLangNote(${li},${ni})">✕</button>
+        <input type="text" value="${esc(n)}" oninput="data.languages[${li}].onboardingNotes[${ni}]=this.value;scheduleSave()">
+        <button class="btn-danger" onclick="removeLangSubNote(${li},'onboardingNotes',${ni})">✕</button>
       `;
-      ul.appendChild(item);
+      obUl.appendChild(item);
+    });
+
+    // Render QA notes
+    const qaUl = card.querySelector(`#lang-${li}-qa`);
+    lang.qaNotes.forEach((n, ni) => {
+      const item = document.createElement('li');
+      item.className = 'bullet-item';
+      item.innerHTML = `
+        <input type="text" value="${esc(n)}" oninput="data.languages[${li}].qaNotes[${ni}]=this.value;scheduleSave()">
+        <button class="btn-danger" onclick="removeLangSubNote(${li},'qaNotes',${ni})">✕</button>
+      `;
+      qaUl.appendChild(item);
     });
   });
 
@@ -681,7 +748,7 @@ function renderLanguages() {
   addBtn.className = 'btn-add';
   addBtn.textContent = '+ Add language';
   addBtn.onclick = () => {
-    data.languages.push({ name: '', eta: '', onboarding: '', qaStatus: '', notes: [''] });
+    data.languages.push({ name: '', eta: '', onboarding: '', onboardingNotes: [''], qaStatus: '', qaNotes: [''] });
     renderLanguages();
     scheduleSave();
   };
@@ -708,14 +775,14 @@ function removePriorityGroup(sectionKey, gi) {
   scheduleSave();
 }
 
-function addLangNote(li) {
-  data.languages[li].notes.push('');
+function addLangSubNote(li, field) {
+  data.languages[li][field].push('');
   renderLanguages();
   scheduleSave();
 }
 
-function removeLangNote(li, ni) {
-  data.languages[li].notes.splice(ni, 1);
+function removeLangSubNote(li, field, ni) {
+  data.languages[li][field].splice(ni, 1);
   renderLanguages();
   scheduleSave();
 }
@@ -790,11 +857,18 @@ function generateSlack() {
     if (!lang.name.trim()) return;
     lines.push(`• *${lang.name.trim()}*`);
     if (lang.eta.trim()) lines.push(`    • ETA ${lang.eta.trim()}`);
-    if (lang.onboarding) lines.push(`    • Onboarding: ${lang.onboarding}`);
-    if (lang.qaStatus) lines.push(`    • QA scenarios: ${lang.qaStatus}`);
-    lang.notes.forEach(n => {
-      if (n.trim()) lines.push(`    • ${n.trim()}`);
-    });
+    if (lang.onboarding) {
+      lines.push(`    • Onboarding: ${lang.onboarding}`);
+      lang.onboardingNotes.forEach(n => {
+        if (n.trim()) lines.push(`        • ${n.trim()}`);
+      });
+    }
+    if (lang.qaStatus) {
+      lines.push(`    • QA scenarios: ${lang.qaStatus}`);
+      lang.qaNotes.forEach(n => {
+        if (n.trim()) lines.push(`        • ${n.trim()}`);
+      });
+    }
   });
 
   return lines.join('\n');
