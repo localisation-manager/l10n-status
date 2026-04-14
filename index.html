@@ -334,41 +334,6 @@
   .lang-subsection select option { background: var(--surface); }
   .lang-subsection .bullet-list { padding-left: 4px; }
 
-  /* Preview */
-  .preview-container {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    margin-top: 20px;
-    overflow: hidden;
-    display: none;
-  }
-  .preview-container.visible { display: block; }
-  .preview-header {
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .preview-header h2 {
-    font-size: 14px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  .preview-body {
-    padding: 18px;
-    font-family: 'Lato', -apple-system, sans-serif;
-    font-size: 14px;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-break: break-word;
-    color: #d1d2d3;
-    background: #1a1d21;
-    max-height: 500px;
-    overflow-y: auto;
-  }
 </style>
 </head>
 <body>
@@ -381,8 +346,7 @@
 
 <div class="actions-bar">
   <button class="btn-primary" onclick="copyToClipboard()">📋 Copy for Slack</button>
-  <button class="btn-secondary" onclick="togglePreview()">👁 Preview</button>
-  <button class="btn-secondary" onclick="resetToDefaults()" style="color:var(--danger);border-color:var(--danger)">↺ Reset to defaults</button>
+<button class="btn-secondary" onclick="resetToDefaults()" style="color:var(--danger);border-color:var(--danger)">↺ Reset to defaults</button>
 </div>
 
 <div class="toast" id="toast">Copied to clipboard ✓</div>
@@ -425,15 +389,6 @@
     <span class="section-toggle">▾</span>
   </div>
   <div class="section-body" id="languages-body"></div>
-</div>
-
-<!-- PREVIEW -->
-<div class="preview-container" id="preview-container">
-  <div class="preview-header">
-    <h2>Slack Preview</h2>
-    <button class="btn-secondary" onclick="togglePreview()" style="padding:6px 14px">Close</button>
-  </div>
-  <div class="preview-body" id="preview-body"></div>
 </div>
 
 <script>
@@ -881,19 +836,6 @@ function copyToClipboard() {
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2000);
   });
-}
-
-function togglePreview() {
-  const container = document.getElementById('preview-container');
-  container.classList.toggle('visible');
-  if (container.classList.contains('visible')) {
-    const text = generateSlack();
-    // Render with simulated Slack bold
-    const html = text
-      .replace(/\*(.+?)\*/g, '<strong>$1</strong>')
-      .replace(/\n/g, '<br>');
-    document.getElementById('preview-body').innerHTML = html;
-  }
 }
 
 // ——— INIT ———
