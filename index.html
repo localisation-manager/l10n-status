@@ -17,6 +17,7 @@
     --green: #34d399;
     --section-product: #f59e42;
     --section-marketing: #38bdf8;
+    --section-i18n: #f472b6;
     --section-language: #a78bfa;
     --danger: #f87171;
     --radius: 10px;
@@ -346,11 +347,13 @@
 <header>
   <h1>L10N Status — Slack Template</h1>
   <p>Edit the sections below, then copy the formatted message for Slack</p>
+  <p style="color:var(--green);font-size:12px;margin-top:4px" id="save-status"></p>
 </header>
 
 <div class="actions-bar">
   <button class="btn-primary" onclick="copyToClipboard()">📋 Copy for Slack</button>
   <button class="btn-secondary" onclick="togglePreview()">👁 Preview</button>
+  <button class="btn-secondary" onclick="resetToDefaults()" style="color:var(--danger);border-color:var(--danger)">↺ Reset to defaults</button>
 </div>
 
 <div class="toast" id="toast">Copied to clipboard ✓</div>
@@ -375,6 +378,16 @@
   <div class="section-body" id="marketing-body"></div>
 </div>
 
+<!-- I18N PROJECTS -->
+<div class="section" id="section-i18n">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="section-dot" style="background:var(--section-i18n)"></span>
+    <h2>i18n Projects</h2>
+    <span class="section-toggle">▾</span>
+  </div>
+  <div class="section-body" id="i18n-body"></div>
+</div>
+
 <!-- NEW LANGUAGE STATUS -->
 <div class="section" id="section-languages">
   <div class="section-header" onclick="toggleSection(this)">
@@ -395,8 +408,12 @@
 </div>
 
 <script>
-// ——— DATA MODEL ———
-const data = {
+// ——— STORAGE KEY ———
+const STORAGE_KEY = 'l10n_slack_template_v2';
+
+// ——— DEFAULT DATA ———
+function getDefaults() { return JSON.parse(JSON.stringify(DEFAULT_DATA)); }
+const DEFAULT_DATA = {
   product: [
     {
       title: "Customer notifications blocked scenarios",
@@ -411,6 +428,12 @@ const data = {
         "Emma to run by Claude current Lara via Crowdin translations saved in the google sheet [hr, hu]",
         "Review process"
       ]
+    }
+  ],
+  i18n: [
+    {
+      title: "",
+      bullets: [""]
     }
   ],
   marketing: [
@@ -504,6 +527,55 @@ const data = {
   ]
 };
 
+// ——— LOAD SAVED DATA OR USE DEFAULTS ———
+let data;
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    data = JSON.parse(saved);
+    // Backfill new sections for older saved data
+    if (!data.i18n) data.i18n = getDefaults().i18n;
+    showSaveStatus('Restored from your last session');
+  } else {
+    data = getDefaults();
+  }
+} catch(e) {
+  data = getDefaults();
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    showSaveStatus('Saved');
+  } catch(e) {}
+}
+
+// Auto-save on every change (debounced)
+let saveTimer;
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveData, 400);
+}
+
+function showSaveStatus(msg) {
+  const el = document.getElementById('save-status');
+  el.textContent = msg;
+  clearTimeout(el._fadeTimer);
+  el._fadeTimer = setTimeout(() => { el.textContent = ''; }, 3000);
+}
+
+function resetToDefaults() {
+  if (!confirm('This will clear all your edits and restore the original template. Are you sure?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  Object.assign(data, getDefaults());
+  // Make sure arrays are replaced, not merged
+  data.product = getDefaults().product;
+  data.marketing = getDefaults().marketing;
+  data.languages = getDefaults().languages;
+  renderAll();
+  showSaveStatus('Reset to defaults');
+}
+
 // ——— RENDERING ———
 
 function renderPrioritySection(containerId, items, sectionKey) {
@@ -515,7 +587,7 @@ function renderPrioritySection(containerId, items, sectionKey) {
     div.className = 'priority-group';
     div.innerHTML = `
       <div class="priority-title">
-        <input type="text" value="${esc(group.title)}" oninput="data.${sectionKey}[${gi}].title=this.value">
+        <input type="text" value="${esc(group.title)}" oninput="data.${sectionKey}[${gi}].title=this.value;scheduleSave()">
         <button class="btn-danger" onclick="removePriorityGroup('${sectionKey}',${gi})">✕</button>
       </div>
       <ul class="bullet-list" id="${sectionKey}-${gi}-bullets"></ul>
@@ -535,6 +607,7 @@ function renderPrioritySection(containerId, items, sectionKey) {
   addBtn.onclick = () => {
     data[sectionKey].push({ title: '', bullets: [''] });
     renderPrioritySection(containerId, data[sectionKey], sectionKey);
+    scheduleSave();
   };
   container.appendChild(addBtn);
 }
@@ -543,7 +616,7 @@ function addBulletEl(ul, sectionKey, gi, bi, value) {
   const li = document.createElement('li');
   li.className = 'bullet-item';
   li.innerHTML = `
-    <input type="text" value="${esc(value)}" oninput="data.${sectionKey}[${gi}].bullets[${bi}]=this.value">
+    <input type="text" value="${esc(value)}" oninput="data.${sectionKey}[${gi}].bullets[${bi}]=this.value;scheduleSave()">
     <button class="btn-danger" onclick="removeBullet('${sectionKey}',${gi},${bi})">✕</button>
   `;
   ul.appendChild(li);
@@ -558,17 +631,17 @@ function renderLanguages() {
     card.className = 'lang-card';
     card.innerHTML = `
       <div class="lang-card-header">
-        <input class="lang-name" type="text" value="${esc(lang.name)}" oninput="data.languages[${li}].name=this.value">
+        <input class="lang-name" type="text" value="${esc(lang.name)}" oninput="data.languages[${li}].name=this.value;scheduleSave()">
         <button class="btn-danger" onclick="removeLanguage(${li})">✕ Remove</button>
       </div>
       <div class="lang-fields">
         <div class="lang-field">
           <label>ETA</label>
-          <input type="text" value="${esc(lang.eta)}" oninput="data.languages[${li}].eta=this.value" style="width:120px">
+          <input type="text" value="${esc(lang.eta)}" oninput="data.languages[${li}].eta=this.value;scheduleSave()" style="width:120px">
         </div>
         <div class="lang-field">
           <label>Onboarding</label>
-          <select onchange="data.languages[${li}].onboarding=this.value">
+          <select onchange="data.languages[${li}].onboarding=this.value;scheduleSave()">
             <option value="" ${lang.onboarding===''?'selected':''}>—</option>
             <option value="Completed" ${lang.onboarding==='Completed'?'selected':''}>Completed</option>
             <option value="In progress" ${lang.onboarding==='In progress'?'selected':''}>In progress</option>
@@ -577,7 +650,7 @@ function renderLanguages() {
         </div>
         <div class="lang-field">
           <label>QA scenarios</label>
-          <select onchange="data.languages[${li}].qaStatus=this.value">
+          <select onchange="data.languages[${li}].qaStatus=this.value;scheduleSave()">
             <option value="" ${lang.qaStatus===''?'selected':''}>—</option>
             <option value="Completed" ${lang.qaStatus==='Completed'?'selected':''}>Completed</option>
             <option value="In progress" ${lang.qaStatus==='In progress'?'selected':''}>In progress</option>
@@ -597,7 +670,7 @@ function renderLanguages() {
       const item = document.createElement('li');
       item.className = 'bullet-item';
       item.innerHTML = `
-        <input type="text" value="${esc(n)}" oninput="data.languages[${li}].notes[${ni}]=this.value">
+        <input type="text" value="${esc(n)}" oninput="data.languages[${li}].notes[${ni}]=this.value;scheduleSave()">
         <button class="btn-danger" onclick="removeLangNote(${li},${ni})">✕</button>
       `;
       ul.appendChild(item);
@@ -610,6 +683,7 @@ function renderLanguages() {
   addBtn.onclick = () => {
     data.languages.push({ name: '', eta: '', onboarding: '', qaStatus: '', notes: [''] });
     renderLanguages();
+    scheduleSave();
   };
   container.appendChild(addBtn);
 }
@@ -618,35 +692,44 @@ function renderLanguages() {
 
 function addBullet(sectionKey, gi) {
   data[sectionKey][gi].bullets.push('');
-  if (sectionKey === 'product') renderPrioritySection('product-body', data.product, 'product');
-  else renderPrioritySection('marketing-body', data.marketing, 'marketing');
+  rerender(sectionKey);
+  scheduleSave();
 }
 
 function removeBullet(sectionKey, gi, bi) {
   data[sectionKey][gi].bullets.splice(bi, 1);
-  if (sectionKey === 'product') renderPrioritySection('product-body', data.product, 'product');
-  else renderPrioritySection('marketing-body', data.marketing, 'marketing');
+  rerender(sectionKey);
+  scheduleSave();
 }
 
 function removePriorityGroup(sectionKey, gi) {
   data[sectionKey].splice(gi, 1);
-  if (sectionKey === 'product') renderPrioritySection('product-body', data.product, 'product');
-  else renderPrioritySection('marketing-body', data.marketing, 'marketing');
+  rerender(sectionKey);
+  scheduleSave();
 }
 
 function addLangNote(li) {
   data.languages[li].notes.push('');
   renderLanguages();
+  scheduleSave();
 }
 
 function removeLangNote(li, ni) {
   data.languages[li].notes.splice(ni, 1);
   renderLanguages();
+  scheduleSave();
 }
 
 function removeLanguage(li) {
   data.languages.splice(li, 1);
   renderLanguages();
+  scheduleSave();
+}
+
+function rerender(sectionKey) {
+  if (sectionKey === 'product') renderPrioritySection('product-body', data.product, 'product');
+  else if (sectionKey === 'i18n') renderPrioritySection('i18n-body', data.i18n, 'i18n');
+  else renderPrioritySection('marketing-body', data.marketing, 'marketing');
 }
 
 function toggleSection(header) {
@@ -678,6 +761,19 @@ function generateSlack() {
   // Marketing L10N Priorities
   lines.push('*MARKETING L10N PRIORITIES*');
   data.marketing.forEach(group => {
+    if (group.title.trim()) {
+      lines.push(`• *${group.title.trim()}*`);
+      group.bullets.forEach(b => {
+        if (b.trim()) lines.push(`    • ${b.trim()}`);
+      });
+    }
+  });
+
+  lines.push('');
+
+  // i18n Projects
+  lines.push('*I18N PROJECTS*');
+  data.i18n.forEach(group => {
     if (group.title.trim()) {
       lines.push(`• *${group.title.trim()}*`);
       group.bullets.forEach(b => {
@@ -727,9 +823,13 @@ function togglePreview() {
 }
 
 // ——— INIT ———
-renderPrioritySection('product-body', data.product, 'product');
-renderPrioritySection('marketing-body', data.marketing, 'marketing');
-renderLanguages();
+function renderAll() {
+  renderPrioritySection('product-body', data.product, 'product');
+  renderPrioritySection('i18n-body', data.i18n, 'i18n');
+  renderPrioritySection('marketing-body', data.marketing, 'marketing');
+  renderLanguages();
+}
+renderAll();
 </script>
 </body>
 </html>
