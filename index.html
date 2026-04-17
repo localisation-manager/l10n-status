@@ -80,6 +80,25 @@
     padding: 4px 10px;
   }
   .btn-danger:hover { background: rgba(248,113,113,0.1); }
+  .assignee-input {
+    flex: 0 0 auto;
+    width: 140px;
+    background: rgba(56, 189, 248, 0.08);
+    border: 1px solid transparent;
+    color: #7dd3fc;
+    font-size: 12px;
+    font-family: inherit;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .assignee-input::placeholder {
+    color: rgba(125, 211, 252, 0.45);
+  }
+  .assignee-input:focus {
+    outline: none;
+    border-color: #38bdf8;
+    background: rgba(56, 189, 248, 0.15);
+  }
   .btn-move {
     background: transparent;
     color: var(--text-muted);
@@ -388,6 +407,7 @@ const DEFAULT_DATA = {
   product: [
     {
       title: "Customer notifications blocked scenarios",
+      assignee: "",
       bullets: [
         "Test customer notifications in pt-PT, es-MX, fr-CA",
         "Mark scenarios as \"blocked, customer notifications\" for pt-PT, es-MX, fr-CA"
@@ -395,6 +415,7 @@ const DEFAULT_DATA = {
     },
     {
       title: "WhatsApp notifications",
+      assignee: "",
       bullets: [
         "Emma to run by Claude current Lara via Crowdin translations saved in the google sheet [hr, hu]",
         "Review process"
@@ -404,12 +425,14 @@ const DEFAULT_DATA = {
   i18n: [
     {
       title: "",
+      assignee: "",
       bullets: [""]
     }
   ],
   marketing: [
     {
       title: "Onboarding emails HR, HU",
+      assignee: "",
       bullets: [
         "Prioritise for completion before April 24",
         "Confirm with Beth availability to enable on April 24"
@@ -423,15 +446,15 @@ const DEFAULT_DATA = {
       etaNote: "",
       onboarding: "Completed",
       onboardingNotes: [
-        "Lea and Ivana"
+        { text: "Lea and Ivana", assignee: "" }
       ],
       qaStatus: "In progress",
       qaNotes: [
-        "Priority: onboarding emails that will need to be enabled on April 24",
-        "Fresha Partner: 73 scenarios completed by Lea",
-        "Marketplace: 44 scenarios completed by Ivana",
-        "On track for launch on April 24",
-        "Emma to run by Claude current Lara via Crowdin translations saved in the sheet"
+        { text: "Priority: onboarding emails that will need to be enabled on April 24", assignee: "" },
+        { text: "Fresha Partner: 73 scenarios completed by Lea", assignee: "" },
+        { text: "Marketplace: 44 scenarios completed by Ivana", assignee: "" },
+        { text: "On track for launch on April 24", assignee: "" },
+        { text: "Emma to run by Claude current Lara via Crowdin translations saved in the sheet", assignee: "" }
       ]
     },
     {
@@ -440,13 +463,13 @@ const DEFAULT_DATA = {
       etaNote: "",
       onboarding: "In progress",
       onboardingNotes: [
-        "Intro call with Orsolya and Àgnes, both on Wednesday morning. Emma to identify if both deserve a chance"
+        { text: "Intro call with Orsolya and Àgnes, both on Wednesday morning. Emma to identify if both deserve a chance", assignee: "" }
       ],
       qaStatus: "In progress",
       qaNotes: [
-        "Priority: onboarding emails that will need to be enabled on April 24",
-        "Fresha Partner: 38 scenarios completed by Zuzanna",
-        "Emma to run by Claude current Lara via Crowdin translations saved in the sheet"
+        { text: "Priority: onboarding emails that will need to be enabled on April 24", assignee: "" },
+        { text: "Fresha Partner: 38 scenarios completed by Zuzanna", assignee: "" },
+        { text: "Emma to run by Claude current Lara via Crowdin translations saved in the sheet", assignee: "" }
       ]
     },
     {
@@ -455,13 +478,13 @@ const DEFAULT_DATA = {
       etaNote: "",
       onboarding: "Completed",
       onboardingNotes: [
-        "Jay Yun",
-        "Ryoo"
+        { text: "Jay Yun", assignee: "" },
+        { text: "Ryoo", assignee: "" }
       ],
       qaStatus: "In progress",
       qaNotes: [
-        "Marketplace scenarios assigned to Jay Yun to complete by EOD Friday 24th April",
-        "No assignments to Ryoo yet"
+        { text: "Marketplace scenarios assigned to Jay Yun to complete by EOD Friday 24th April", assignee: "" },
+        { text: "No assignments to Ryoo yet", assignee: "" }
       ]
     },
     {
@@ -470,7 +493,7 @@ const DEFAULT_DATA = {
       etaNote: "",
       onboarding: "In progress",
       onboardingNotes: [
-        "Waiting for HR to sent contract to Gül"
+        { text: "Waiting for HR to sent contract to Gül", assignee: "" }
       ],
       qaStatus: "",
       qaNotes: []
@@ -483,10 +506,10 @@ const DEFAULT_DATA = {
       onboardingNotes: [],
       qaStatus: "In progress",
       qaNotes: [
-        "197 scenarios completed",
-        "14 hours left for the launch package - Fresha Partner only",
-        "Emails ready for launch",
-        "Waiting for engineering to provide ETA"
+        { text: "197 scenarios completed", assignee: "" },
+        { text: "14 hours left for the launch package - Fresha Partner only", assignee: "" },
+        { text: "Emails ready for launch", assignee: "" },
+        { text: "Waiting for engineering to provide ETA", assignee: "" }
       ]
     },
     {
@@ -495,7 +518,7 @@ const DEFAULT_DATA = {
       etaNote: "Mid June",
       onboarding: "In progress",
       onboardingNotes: [
-        "Waiting for HR to send contract to Paola"
+        { text: "Waiting for HR to send contract to Paola", assignee: "" }
       ],
       qaStatus: "",
       qaNotes: []
@@ -506,15 +529,23 @@ const DEFAULT_DATA = {
       etaNote: "Mid June",
       onboarding: "Completed",
       onboardingNotes: [
-        "Natacha has confirmed availability of 10h/week. More hours from May"
+        { text: "Natacha has confirmed availability of 10h/week. More hours from May", assignee: "" }
       ],
       qaStatus: "Not started",
       qaNotes: [
-        "Assign Fresha Partner scenarios instead of Marketplace (blocked by customer notifications)"
+        { text: "Assign Fresha Partner scenarios instead of Marketplace (blocked by customer notifications)", assignee: "" }
       ]
     }
   ]
 };
+// ——— HELPERS ———
+function normaliseNote(n) {
+  if (n && typeof n === 'object') {
+    return { text: n.text || '', assignee: n.assignee || '' };
+  }
+  return { text: String(n || ''), assignee: '' };
+}
+
 // ——— ETA PARSING / FORMATTING HELPERS ———
 function tryParseEta(text) {
   if (!text) return { date: '', note: '' };
@@ -577,6 +608,16 @@ try {
       }
       if (lang.etaDate === undefined) lang.etaDate = '';
       if (lang.etaNote === undefined) lang.etaNote = '';
+      // Migrate note strings → { text, assignee }
+      lang.onboardingNotes = lang.onboardingNotes.map(normaliseNote);
+      lang.qaNotes = lang.qaNotes.map(normaliseNote);
+    });
+    // Add missing assignee on priority groups
+    ['product', 'i18n', 'marketing'].forEach(key => {
+      if (!Array.isArray(data[key])) return;
+      data[key].forEach(group => {
+        if (group.assignee === undefined) group.assignee = '';
+      });
     });
     showSaveStatus('Restored from your last session');
   } else {
@@ -628,6 +669,7 @@ function renderPrioritySection(containerId, items, sectionKey) {
         <button class="btn-move" title="Move up" onclick="movePriorityGroup('${sectionKey}',${gi},-1)" ${isFirst ? 'disabled' : ''}>▲</button>
         <button class="btn-move" title="Move down" onclick="movePriorityGroup('${sectionKey}',${gi},1)" ${isLast ? 'disabled' : ''}>▼</button>
         <input type="text" value="${esc(group.title)}" oninput="data.${sectionKey}[${gi}].title=this.value;scheduleSave()">
+        <input class="assignee-input" type="text" value="${esc(group.assignee || '')}" placeholder="@assignee" oninput="data.${sectionKey}[${gi}].assignee=this.value;scheduleSave()">
         <button class="btn-danger" onclick="removePriorityGroup('${sectionKey}',${gi})">✕</button>
       </div>
       <ul class="bullet-list" id="${sectionKey}-${gi}-bullets"></ul>
@@ -643,7 +685,7 @@ function renderPrioritySection(containerId, items, sectionKey) {
   addBtn.className = 'btn-add';
   addBtn.textContent = '+ Add priority group';
   addBtn.onclick = () => {
-    data[sectionKey].push({ title: '', bullets: [''] });
+    data[sectionKey].push({ title: '', assignee: '', bullets: [''] });
     renderPrioritySection(containerId, data[sectionKey], sectionKey);
     scheduleSave();
   };
@@ -718,7 +760,8 @@ function renderLanguages() {
       item.innerHTML = `
         <button class="btn-move" title="Move up" onclick="moveLangSubNote(${li},'onboardingNotes',${ni},-1)" ${isFirst ? 'disabled' : ''}>▲</button>
         <button class="btn-move" title="Move down" onclick="moveLangSubNote(${li},'onboardingNotes',${ni},1)" ${isLast ? 'disabled' : ''}>▼</button>
-        <input type="text" value="${esc(n)}" oninput="data.languages[${li}].onboardingNotes[${ni}]=this.value;scheduleSave()">
+        <input type="text" value="${esc(n.text)}" oninput="data.languages[${li}].onboardingNotes[${ni}].text=this.value;scheduleSave()">
+        <input class="assignee-input" type="text" value="${esc(n.assignee || '')}" placeholder="@assignee" oninput="data.languages[${li}].onboardingNotes[${ni}].assignee=this.value;scheduleSave()">
         <button class="btn-danger" onclick="removeLangSubNote(${li},'onboardingNotes',${ni})">✕</button>
       `;
       obUl.appendChild(item);
@@ -733,7 +776,8 @@ function renderLanguages() {
       item.innerHTML = `
         <button class="btn-move" title="Move up" onclick="moveLangSubNote(${li},'qaNotes',${ni},-1)" ${isFirst ? 'disabled' : ''}>▲</button>
         <button class="btn-move" title="Move down" onclick="moveLangSubNote(${li},'qaNotes',${ni},1)" ${isLast ? 'disabled' : ''}>▼</button>
-        <input type="text" value="${esc(n)}" oninput="data.languages[${li}].qaNotes[${ni}]=this.value;scheduleSave()">
+        <input type="text" value="${esc(n.text)}" oninput="data.languages[${li}].qaNotes[${ni}].text=this.value;scheduleSave()">
+        <input class="assignee-input" type="text" value="${esc(n.assignee || '')}" placeholder="@assignee" oninput="data.languages[${li}].qaNotes[${ni}].assignee=this.value;scheduleSave()">
         <button class="btn-danger" onclick="removeLangSubNote(${li},'qaNotes',${ni})">✕</button>
       `;
       qaUl.appendChild(item);
@@ -743,7 +787,7 @@ function renderLanguages() {
   addBtn.className = 'btn-add';
   addBtn.textContent = '+ Add language';
   addBtn.onclick = () => {
-    data.languages.push({ name: '', etaDate: '', etaNote: '', onboarding: '', onboardingNotes: [''], qaStatus: '', qaNotes: [''] });
+    data.languages.push({ name: '', etaDate: '', etaNote: '', onboarding: '', onboardingNotes: [{ text: '', assignee: '' }], qaStatus: '', qaNotes: [{ text: '', assignee: '' }] });
     renderLanguages();
     scheduleSave();
   };
@@ -775,7 +819,7 @@ function movePriorityGroup(sectionKey, gi, delta) {
   scheduleSave();
 }
 function addLangSubNote(li, field) {
-  data.languages[li][field].push('');
+  data.languages[li][field].push({ text: '', assignee: '' });
   renderLanguages();
   scheduleSave();
 }
@@ -810,40 +854,32 @@ function esc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 // ——— GENERATE SLACK TEXT ———
+function formatAssignee(a) {
+  if (!a) return '';
+  const t = String(a).trim();
+  if (!t) return '';
+  return t.startsWith('@') ? ` ${t}` : ` @${t}`;
+}
+function renderPriorityGroup(lines, group) {
+  if (!group.title.trim()) return;
+  lines.push(`• *${group.title.trim()}*${formatAssignee(group.assignee)}`);
+  group.bullets.forEach(b => {
+    if (b.trim()) lines.push(`    • ${b.trim()}`);
+  });
+}
 function generateSlack() {
   let lines = [];
   // Product L10N Priorities
   lines.push('*PRODUCT L10N PRIORITIES*');
-  data.product.forEach(group => {
-    if (group.title.trim()) {
-      lines.push(`• *${group.title.trim()}*`);
-      group.bullets.forEach(b => {
-        if (b.trim()) lines.push(`    • ${b.trim()}`);
-      });
-    }
-  });
+  data.product.forEach(group => renderPriorityGroup(lines, group));
   lines.push('');
   // Marketing L10N Priorities
   lines.push('*MARKETING L10N PRIORITIES*');
-  data.marketing.forEach(group => {
-    if (group.title.trim()) {
-      lines.push(`• *${group.title.trim()}*`);
-      group.bullets.forEach(b => {
-        if (b.trim()) lines.push(`    • ${b.trim()}`);
-      });
-    }
-  });
+  data.marketing.forEach(group => renderPriorityGroup(lines, group));
   lines.push('');
   // i18n Projects
   lines.push('*I18N PROJECTS*');
-  data.i18n.forEach(group => {
-    if (group.title.trim()) {
-      lines.push(`• *${group.title.trim()}*`);
-      group.bullets.forEach(b => {
-        if (b.trim()) lines.push(`    • ${b.trim()}`);
-      });
-    }
-  });
+  data.i18n.forEach(group => renderPriorityGroup(lines, group));
   lines.push('');
   // New Language Status
   lines.push('*NEW LANGUAGE STATUS*');
@@ -861,13 +897,15 @@ function generateSlack() {
     if (lang.onboarding) {
       lines.push(`    • Onboarding: ${lang.onboarding}`);
       lang.onboardingNotes.forEach(n => {
-        if (n.trim()) lines.push(`        • ${n.trim()}`);
+        const t = (n.text || '').trim();
+        if (t) lines.push(`        • ${t}${formatAssignee(n.assignee)}`);
       });
     }
     if (lang.qaStatus) {
       lines.push(`    • QA scenarios: ${lang.qaStatus}`);
       lang.qaNotes.forEach(n => {
-        if (n.trim()) lines.push(`        • ${n.trim()}`);
+        const t = (n.text || '').trim();
+        if (t) lines.push(`        • ${t}${formatAssignee(n.assignee)}`);
       });
     }
   });
