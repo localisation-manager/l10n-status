@@ -715,7 +715,7 @@ function renderLanguages() {
       <div class="lang-fields">
         <div class="lang-field">
           <label>ETA</label>
-          <input type="date" value="${esc(lang.etaDate || '')}" onchange="data.languages[${li}].etaDate=this.value;renderLanguages();scheduleSave()" style="width:150px">
+          <input type="date" min="2000-01-01" max="2100-12-31" value="${esc(lang.etaDate || '')}" onchange="data.languages[${li}].etaDate=this.value;renderLanguages();scheduleSave()" style="width:150px">
         </div>
         <div class="lang-field">
           <label>ETA note</label>
