@@ -875,7 +875,13 @@ function renderRequests() {
   data.requests.forEach((req, ri) => {
     const card = document.createElement('div');
     card.className = 'request-card';
+    const isFirst = ri === 0;
+    const isLast = ri === data.requests.length - 1;
     card.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <button class="btn-move" title="Move up" onclick="moveRequest(${ri},-1)" ${isFirst ? 'disabled' : ''}>▲</button>
+        <button class="btn-move" title="Move down" onclick="moveRequest(${ri},1)" ${isLast ? 'disabled' : ''}>▼</button>
+      </div>
       <div class="request-fields">
         <input class="request-lang" type="text" value="${esc(req.language)}" placeholder="Language name" oninput="data.requests[${ri}].language=this.value;scheduleSave()">
         <textarea class="request-note" placeholder="Who requested it, how many times, context..." oninput="data.requests[${ri}].note=this.value;scheduleSave()">${esc(req.note)}</textarea>
@@ -941,6 +947,14 @@ function moveLangSubNote(li, field, ni, delta) {
 function removeLanguage(li) {
   data.languages.splice(li, 1);
   renderLanguages();
+  scheduleSave();
+}
+function moveRequest(ri, delta) {
+  const newIndex = ri + delta;
+  if (newIndex < 0 || newIndex >= data.requests.length) return;
+  const [item] = data.requests.splice(ri, 1);
+  data.requests.splice(newIndex, 0, item);
+  renderRequests();
   scheduleSave();
 }
 function removeRequest(ri) {
