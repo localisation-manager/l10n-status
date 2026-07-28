@@ -997,7 +997,7 @@ function generateSlack() {
   let lines = [];
   // Date header
   const dateStr = formatStatusDate(data.statusDate);
-  if (dateStr) lines.push(`*L10N STATUS — ${dateStr}*\n`);
+  if (dateStr) lines.push(`\`L10N STATUS — ${dateStr}\`\n`);
   // Product L10N Priorities
   lines.push('*PRODUCT L10N PRIORITIES*');
   data.product.forEach(group => renderPriorityGroup(lines, group));
