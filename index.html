@@ -412,8 +412,12 @@
   <p style="color:var(--green);font-size:12px;margin-top:4px" id="save-status"></p>
 </header>
 <div class="actions-bar">
+  <div class="lang-field" style="background:rgba(124,92,252,0.1);padding:8px 14px;border-radius:8px;">
+    <label style="color:var(--accent);font-weight:700;">Status date</label>
+    <input type="date" id="status-date" style="width:160px;color:var(--text);font-size:13px;" onchange="data.statusDate=this.value;scheduleSave()">
+  </div>
   <button class="btn-primary" onclick="copyToClipboard()">📋 Copy for Slack</button>
-<button class="btn-secondary" onclick="resetToDefaults()" style="color:var(--danger);border-color:var(--danger)">↺ Reset to defaults</button>
+  <button class="btn-secondary" onclick="resetToDefaults()" style="color:var(--danger);border-color:var(--danger)">↺ Reset to defaults</button>
 </div>
 <div class="toast" id="toast">Copied to clipboard ✓</div>
 <!-- PRODUCT L10N PRIORITIES -->
@@ -467,6 +471,7 @@ const STORAGE_KEY = 'l10n_slack_template_v3';
 // ——— DEFAULT DATA ———
 function getDefaults() { return JSON.parse(JSON.stringify(DEFAULT_DATA)); }
 const DEFAULT_DATA = {
+  statusDate: new Date().toISOString().slice(0, 10),
   product: [
     {
       title: "Customer notifications blocked scenarios",
@@ -656,6 +661,7 @@ try {
   if (saved) {
     data = JSON.parse(saved);
     // Backfill new sections for older saved data
+    if (!data.statusDate) data.statusDate = new Date().toISOString().slice(0, 10);
     if (!data.i18n) data.i18n = getDefaults().i18n;
     if (!data.requests) data.requests = getDefaults().requests;
     // Migrate old notes[] → onboardingNotes[] + qaNotes[]
@@ -717,6 +723,7 @@ function resetToDefaults() {
   localStorage.removeItem(STORAGE_KEY);
   Object.assign(data, getDefaults());
   // Make sure arrays are replaced, not merged
+  data.statusDate = new Date().toISOString().slice(0, 10);
   data.product = getDefaults().product;
   data.marketing = getDefaults().marketing;
   data.languages = getDefaults().languages;
@@ -966,8 +973,17 @@ function renderPriorityGroup(lines, group) {
     if (b.trim()) lines.push(`    • ${b.trim()}`);
   });
 }
+function formatStatusDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T00:00:00');
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
 function generateSlack() {
   let lines = [];
+  // Date header
+  const dateStr = formatStatusDate(data.statusDate);
+  if (dateStr) lines.push(`*L10N STATUS — ${dateStr}*\n`);
   // Product L10N Priorities
   lines.push('*PRODUCT L10N PRIORITIES*');
   data.product.forEach(group => renderPriorityGroup(lines, group));
@@ -1031,6 +1047,7 @@ function copyToClipboard() {
 }
 // ——— INIT ———
 function renderAll() {
+  document.getElementById('status-date').value = data.statusDate || new Date().toISOString().slice(0, 10);
   renderPrioritySection('product-body', data.product, 'product');
   renderPrioritySection('i18n-body', data.i18n, 'i18n');
   renderPrioritySection('marketing-body', data.marketing, 'marketing');
